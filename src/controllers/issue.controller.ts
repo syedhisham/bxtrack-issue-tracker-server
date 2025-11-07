@@ -6,6 +6,7 @@ import {
   updateIssue,
   getIssueSummary,
   getMyIssues,
+  getMentionedIssues,
 } from "../services/issue.service";
 import { CreateIssueDto, UpdateIssueDto, IssueFilters } from "../types/issue.types";
 import { Priority, Status } from "../models/issue.model";
@@ -194,7 +195,9 @@ export const updateIssueController = async (req: Request, res: Response): Promis
       return;
     }
 
-    const issue = await updateIssue(id, updateDto);
+    // Get user ID from authenticated request for notification
+    const userId = req.user?.userId || undefined;
+    const issue = await updateIssue(id, updateDto, userId);
     sendSuccess(res, issue, 200, "Issue updated successfully");
   } catch (error) {
     if (error instanceof Error && error.message === "Issue not found") {
@@ -291,6 +294,61 @@ export const getIssueSummaryController = async (req: Request, res: Response): Pr
     sendSuccess(res, summary);
   } catch (error) {
     console.error("Get issue summary error:", error);
+    sendError(res, "Internal server error", 500, error);
+  }
+};
+
+export const getMentionedIssuesController = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Get user ID from authenticated request
+    if (!req.user || !req.user.userId) {
+      sendError(res, "Authentication required", 401);
+      return;
+    }
+
+    const { status, priority, page, limit } = req.query;
+
+    // Validate status enum if provided
+    if (status && !Object.values(Status).includes(status as Status)) {
+      sendError(res, `Invalid status. Must be one of: ${Object.values(Status).join(", ")}`, 400);
+      return;
+    }
+
+    // Validate priority enum if provided
+    if (priority && !Object.values(Priority).includes(priority as Priority)) {
+      sendError(res, `Invalid priority. Must be one of: ${Object.values(Priority).join(", ")}`, 400);
+      return;
+    }
+
+    // Validate pagination parameters
+    const pageNum = page ? parseInt(page as string, 10) : 1;
+    const limitNum = limit ? parseInt(limit as string, 10) : 10;
+
+    if (pageNum < 1) {
+      sendError(res, "Page must be greater than 0", 400);
+      return;
+    }
+
+    if (limitNum < 1 || limitNum > 100) {
+      sendError(res, "Limit must be between 1 and 100", 400);
+      return;
+    }
+
+    const filters: Omit<IssueFilters, "assignee"> = {
+      ...(status && { status: status as Status }),
+      ...(priority && { priority: priority as Priority }),
+      page: pageNum,
+      limit: limitNum,
+    };
+
+    const result = await getMentionedIssues(req.user.userId, filters);
+    sendSuccess(res, result);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("Invalid")) {
+      sendError(res, error.message, 400, error);
+      return;
+    }
+    console.error("Get mentioned issues error:", error);
     sendError(res, "Internal server error", 500, error);
   }
 };

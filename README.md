@@ -1,6 +1,6 @@
 # Issue Tracker API
 
-A RESTful backend API for a mini issue tracking application built with Node.js, Express, TypeScript, and MongoDB. This API provides endpoints for user authentication, issue management, and issue assignment functionality.
+A RESTful backend API for a mini issue tracking application built with Node.js, Express, TypeScript, and MongoDB. This API provides endpoints for user authentication, issue management, and issue assignment functionality. Additionally, it includes bonus features for comment management and notification systems to enhance collaboration and activity tracking.
 
 ## Tech Stack
 
@@ -56,6 +56,49 @@ All issue routes require authentication.
 ### Health Check
 
 - `GET /api/health` - Server health check endpoint
+
+## Bonus Features
+
+The following endpoints were implemented as bonus features to enhance the issue tracking functionality with activity tracking and notifications.
+
+### Comments (`/api/comments`)
+
+All comment routes require authentication. Comments allow users to add activity and discussions to issues, enabling better collaboration and issue tracking.
+
+- `POST /api/comments` - Create a new comment on an issue
+- `GET /api/comments/issue/:issueId` - Get all comments for a specific issue
+- `PATCH /api/comments/:id` - Update a comment
+- `DELETE /api/comments/:id` - Delete a comment
+
+**Features:**
+- Support for user mentions in comments using `@username` syntax
+- Automatic notifications to mentioned users, issue creator, and assignee
+- Full CRUD operations for comments
+- Comments are linked to specific issues and include author information
+
+### Notifications (`/api/notifications`)
+
+All notification routes require authentication. The notification system provides updates about issue activities, assignments, and mentions.
+
+- `GET /api/notifications` - Get all notifications for the logged-in user (with pagination)
+- `PATCH /api/notifications/:id/read` - Mark a specific notification as read
+- `PATCH /api/notifications/read-all` - Mark all notifications as read
+
+**Notification Types:**
+- Issue created
+- Issue assigned
+- Issue updated
+- Status changed
+- Priority changed
+- Comment added
+- User mentioned in comment
+
+**Features:**
+- Notification delivery
+- Unread count tracking
+- Pagination support for notification lists
+- Bulk read operations
+- Notifications include links to related issues for easy navigation
 
 ## Installation
 
@@ -218,8 +261,4 @@ The API returns appropriate HTTP status codes:
 - `npm run build` - Compile TypeScript to JavaScript
 - `npm start` - Start production server
 - `npm run seed` - Seed database with initial users
-
-## License
-
-ISC
 

@@ -7,6 +7,7 @@ import {
   updateIssueController,
   getIssueSummaryController,
   getMyIssuesController,
+  getMentionedIssuesController,
 } from "../controllers/issue.controller";
 
 const router = Router();
@@ -15,6 +16,7 @@ const router = Router();
 router.post("/", authenticate, createIssueController);
 router.get("/", authenticate, getIssuesController);
 router.get("/my-issues", authenticate, getMyIssuesController);
+router.get("/mentioned", authenticate, getMentionedIssuesController);
 router.get("/summary", authenticate, getIssueSummaryController);
 router.get("/:id", authenticate, getIssueByIdController);
 router.patch("/:id", authenticate, updateIssueController);
