@@ -5,10 +5,35 @@ import cookieParser from "cookie-parser";
 const app = express();
 
 // CORS configuration - allow credentials for cookies
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "https://bxtrack-issue-tracker-client.vercel.app",
+  "http://localhost:3000",
+].filter(Boolean) as string[];
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, Postman, etc.)
+      if (!origin) {
+        return callback(null, true);
+      }
+      
+      // Check if origin is in allowed list
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        // For development, allow localhost with any port
+        if (process.env.NODE_ENV !== "production" && origin.startsWith("http://localhost:")) {
+          callback(null, true);
+        } else {
+          callback(new Error("Not allowed by CORS"));
+        }
+      }
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
