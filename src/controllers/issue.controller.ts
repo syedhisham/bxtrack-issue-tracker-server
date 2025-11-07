@@ -271,7 +271,23 @@ export const getMyIssuesController = async (req: Request, res: Response): Promis
 
 export const getIssueSummaryController = async (req: Request, res: Response): Promise<void> => {
   try {
-    const summary = await getIssueSummary();
+    const { assigneePage, assigneeLimit } = req.query;
+
+    // Validate pagination parameters for assignees
+    const pageNum = assigneePage ? parseInt(assigneePage as string, 10) : 1;
+    const limitNum = assigneeLimit ? parseInt(assigneeLimit as string, 10) : 5;
+
+    if (pageNum < 1) {
+      sendError(res, "Assignee page must be greater than 0", 400);
+      return;
+    }
+
+    if (limitNum < 1 || limitNum > 50) {
+      sendError(res, "Assignee limit must be between 1 and 50", 400);
+      return;
+    }
+
+    const summary = await getIssueSummary(pageNum, limitNum);
     sendSuccess(res, summary);
   } catch (error) {
     console.error("Get issue summary error:", error);

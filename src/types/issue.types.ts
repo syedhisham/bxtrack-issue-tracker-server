@@ -48,5 +48,11 @@ export interface IssueSummary {
     email: string | null;
     count: number;
   }>;
+  assigneePagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 

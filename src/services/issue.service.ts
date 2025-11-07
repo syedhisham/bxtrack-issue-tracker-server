@@ -242,7 +242,7 @@ export const updateIssue = async (id: string, updateDto: UpdateIssueDto) => {
   return formatIssue(populatedIssue);
 };
 
-export const getIssueSummary = async (): Promise<IssueSummary> => {
+export const getIssueSummary = async (assigneePage?: number, assigneeLimit?: number): Promise<IssueSummary> => {
   // Get total count
   const total = await Issue.countDocuments();
 
@@ -286,7 +286,7 @@ export const getIssueSummary = async (): Promise<IssueSummary> => {
     byPriority[item._id as Priority] = item.count;
   });
 
-  // Count by assignee
+  // Count by assignee with pagination
   const assigneeCounts = await Issue.aggregate([
     {
       $group: {
@@ -296,8 +296,20 @@ export const getIssueSummary = async (): Promise<IssueSummary> => {
     },
   ]);
 
+  // Get total assignees count (including unassigned)
+  const totalAssignees = assigneeCounts.length;
+
+  // Apply pagination if provided
+  const page = assigneePage || 1;
+  const limit = assigneeLimit || 5;
+  const skip = (page - 1) * limit;
+  const totalPages = Math.ceil(totalAssignees / limit);
+
+  // Get paginated assignee counts
+  const paginatedAssigneeCounts = assigneeCounts.slice(skip, skip + limit);
+
   const byAssignee = await Promise.all(
-    assigneeCounts.map(async (item) => {
+    paginatedAssigneeCounts.map(async (item) => {
       if (!item._id) {
         return {
           assigneeId: null,
@@ -330,5 +342,11 @@ export const getIssueSummary = async (): Promise<IssueSummary> => {
       email: string | null;
       count: number;
     }>,
+    assigneePagination: {
+      page,
+      limit,
+      total: totalAssignees,
+      totalPages,
+    },
   };
 };
