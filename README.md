@@ -262,3 +262,23 @@ The API returns appropriate HTTP status codes:
 - `npm start` - Start production server
 - `npm run seed` - Seed database with initial users
 
+## What I Would Improve If This Was Production
+
+### Security Enhancements
+- **Authentication**: Implement proper password-based authentication with bcrypt hashing, password reset flows, and session management instead of email-only login.
+- **Rate Limiting**: Add rate limiting middleware (express-rate-limit) to prevent brute force attacks and API abuse.
+- **JWT Security**: Implement token refresh mechanism, shorter token expiration, and secure token storage practices.
+
+### Performance & Scalability
+- **Caching Layer**: Implement Redis caching for frequently accessed data (user lists, issue summaries, notification counts).
+- **Database Optimization**: Add compound indexes for common query patterns, implement query result pagination limits, and optimize aggregation pipelines.
+- **API Response Optimization**: Implement field selection/projection to reduce payload sizes and improve response times.
+
+### Error Handling & Logging
+- **Centralized Error Handling**: Create global error handling middleware with structured error responses and proper HTTP status codes.
+- **Structured Logging**: Replace console.log with a logging library (Winston, Pino) with log levels, file rotation, and structured JSON output.
+- **Request Validation**: Use validation libraries (Joi, Zod, class-validator) to centralize and standardize input validation across controllers.
+
+### Code Quality & Architecture
+- **Transaction Support**: Use MongoDB transactions for multi-step operations (issue creation with notifications) to ensure data consistency.
+
